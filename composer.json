@@ -1,0 +1,43 @@
+{
+  "name": "meritum/http-exception-handler",
+  "description": "meritum/http exception handler that translates exceptions into structured JSON error responses using the meritum/structured-logging pipeline",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Mike Georgeff",
+      "email": "mike@georgeff.co",
+      "role": "Author"
+    }
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^8.4",
+    "georgeff/kernel": "^1.6",
+    "meritum/http": "^1.0",
+    "meritum/structured-logging": "^1.0"
+  },
+  "require-dev": {
+    "bnf/phpstan-psr-container": "^1.0",
+    "phpstan/phpstan": "^2.0",
+    "phpunit/phpunit": "^11.0",
+    "squizlabs/php_codesniffer": "^3.11"
+  },
+  "autoload": {
+    "psr-4": {
+      "Meritum\\HttpExceptionHandler\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Meritum\\HttpExceptionHandler\\Test\\": "tests/"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "scripts": {
+    "test": ["vendor/bin/phpunit"],
+    "analyze": ["vendor/bin/phpstan"],
+    "phpcs": ["vendor/bin/phpcs"]
+  }
+}
