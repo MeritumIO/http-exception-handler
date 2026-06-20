@@ -7,6 +7,11 @@ use Meritum\StructuredLogging\Exception\DomainException;
 
 final class ErrorEnvelope implements \JsonSerializable
 {
+    /**
+     * @var array<int, array<string, mixed>>
+     */
+    public private(set) array $errors = [];
+
     public function __construct(
         public readonly string $code,
         public readonly int $status,
@@ -32,13 +37,29 @@ final class ErrorEnvelope implements \JsonSerializable
         return new self($code, $status, $title, $detail);
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $errors
+     */
+    public function withErrors(array $errors): self
+    {
+        $this->errors = $errors;
+
+        return $this;
+    }
+
     public function jsonSerialize(): mixed
     {
-        return [
+        $data = [
             'code'   => $this->code,
             'status' => $this->status,
             'title'  => $this->title,
             'detail' => $this->detail,
         ];
+
+        if ([] !== $this->errors) {
+            $data['errors'] = $this->errors;
+        }
+
+        return $data;
     }
 }

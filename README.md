@@ -63,6 +63,7 @@ All error responses use a consistent JSON envelope:
 - `status` — the HTTP status code as an integer; also set as the response status
 - `title` — the HTTP exception title; `"Unexpected Error"` for non-HTTP exceptions
 - `detail` — the exception message; may be `null`
+- `errors` — an optional array of additional error detail objects; omitted when empty
 
 ### Custom HTTP exceptions
 
@@ -140,6 +141,37 @@ $envelope = new ErrorEnvelope('HTTP_403', 403, 'Forbidden', 'You do not have per
 
 return new JsonResponse($envelope, $envelope->status);
 ```
+
+### Attaching additional errors
+
+Call `withErrors()` to attach a list of error detail objects to the envelope. The shape of each entry is up to the caller — `withErrors()` carries any `string`-keyed map:
+
+```php
+$envelope = ErrorEnvelope::fromDomainException($domainException)
+    ->withErrors([
+        ['field' => 'email', 'message' => 'Must be a valid email address.'],
+        ['field' => 'age',   'message' => 'Must be an integer greater than 0.'],
+    ]);
+
+return new JsonResponse($envelope, $envelope->status);
+```
+
+This produces:
+
+```json
+{
+  "code":   "HTTP_422",
+  "status": 422,
+  "title":  "Unprocessable Entity",
+  "detail": "The request body contains validation errors.",
+  "errors": [
+    { "field": "email", "message": "Must be a valid email address." },
+    { "field": "age",   "message": "Must be an integer greater than 0." }
+  ]
+}
+```
+
+`errors` is omitted from the response entirely when `withErrors()` is not called. `withErrors()` replaces any previously set errors — pass the full list in a single call.
 
 ## License
 

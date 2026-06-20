@@ -159,4 +159,52 @@ final class ErrorEnvelopeTest extends TestCase
 
         $this->assertSame('The requested resource was not found', $envelope->detail);
     }
+
+    #[Test]
+    public function test_with_errors_sets_errors(): void
+    {
+        $errors = [
+            ['field' => 'email', 'message' => 'Must be a valid email address.'],
+            ['field' => 'age',   'message' => 'Must be an integer greater than 0.'],
+        ];
+
+        $envelope = (new ErrorEnvelope('HTTP_422', 422, 'Unprocessable Entity'))->withErrors($errors);
+
+        $this->assertSame($errors, $envelope->errors);
+    }
+
+    #[Test]
+    public function test_with_errors_replaces_existing_errors(): void
+    {
+        $envelope = (new ErrorEnvelope('HTTP_422', 422, 'Unprocessable Entity'))
+            ->withErrors([['field' => 'email', 'message' => 'Required.']])
+            ->withErrors([['field' => 'age', 'message' => 'Must be an integer.']]);
+
+        $this->assertCount(1, $envelope->errors);
+        $this->assertSame('age', $envelope->errors[0]['field']);
+    }
+
+    #[Test]
+    public function test_json_serialize_includes_errors_when_set(): void
+    {
+        $errors = [
+            ['field' => 'email', 'message' => 'Must be a valid email address.'],
+            ['field' => 'age',   'message' => 'Must be an integer greater than 0.'],
+        ];
+
+        $data = (new ErrorEnvelope('HTTP_422', 422, 'Unprocessable Entity', 'The request body contains validation errors.'))
+            ->withErrors($errors)
+            ->jsonSerialize();
+
+        $this->assertArrayHasKey('errors', $data);
+        $this->assertSame($errors, $data['errors']);
+    }
+
+    #[Test]
+    public function test_json_serialize_omits_errors_when_empty(): void
+    {
+        $data = (new ErrorEnvelope('HTTP_404', 404, 'Not Found'))->jsonSerialize();
+
+        $this->assertArrayNotHasKey('errors', $data);
+    }
 }
