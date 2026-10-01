@@ -3,11 +3,13 @@
 namespace Meritum\HttpExceptionHandler\Test;
 
 use Georgeff\Kernel\DI\TagRegistryInterface;
-use Georgeff\Kernel\Environment;
-use Georgeff\Kernel\Kernel;
-use Meritum\Http\Exception\ExceptionHandlerInterface;
+use Georgeff\Kernel\Environment\Testing;
+use Georgeff\Kernel\Exception\ModuleException;
+use Meritum\Http\Contract\ExceptionHandlerInterface;
+use Meritum\Http\HttpKernel;
 use Meritum\HttpExceptionHandler\ExceptionHandlerModule;
 use Meritum\HttpExceptionHandler\HttpExceptionTranslationHandler;
+use Meritum\StructuredLogging\ExceptionReporter;
 use Meritum\StructuredLogging\StructuredLoggingModule;
 use Meritum\StructuredLogging\TranslationHandler;
 use PHPUnit\Framework\Attributes\Test;
@@ -17,11 +19,10 @@ use Psr\Log\NullLogger;
 
 final class ExceptionHandlerModuleTest extends TestCase
 {
-    private function makeKernel(): Kernel
+    private function makeKernel(): HttpKernel
     {
-        $kernel = new Kernel(Environment::Testing);
+        $kernel = new HttpKernel(new Testing());
         $kernel->define(LoggerInterface::class, fn() => new NullLogger());
-        $kernel->addModule(new StructuredLoggingModule());
         $kernel->addModule(new ExceptionHandlerModule());
         $kernel->boot();
 
@@ -34,6 +35,40 @@ final class ExceptionHandlerModuleTest extends TestCase
         $container = $this->makeKernel()->getContainer();
 
         $this->assertInstanceOf(ExceptionHandlerInterface::class, $container->get(ExceptionHandlerInterface::class));
+    }
+
+    #[Test]
+    public function test_exception_handler_is_shared(): void
+    {
+        $container = $this->makeKernel()->getContainer();
+
+        $this->assertSame(
+            $container->get(ExceptionHandlerInterface::class),
+            $container->get(ExceptionHandlerInterface::class)
+        );
+    }
+
+    #[Test]
+    public function test_aggregates_structured_logging_module(): void
+    {
+        $kernel = $this->makeKernel();
+
+        $this->assertContains(StructuredLoggingModule::class, $kernel->getModules());
+        $this->assertInstanceOf(ExceptionReporter::class, $kernel->getContainer()->get(ExceptionReporter::class));
+    }
+
+    #[Test]
+    public function test_registering_structured_logging_module_directly_as_well_throws(): void
+    {
+        $kernel = new HttpKernel(new Testing());
+        $kernel->define(LoggerInterface::class, fn() => new NullLogger());
+        $kernel->addModule(new StructuredLoggingModule());
+        $kernel->addModule(new ExceptionHandlerModule());
+
+        $this->expectException(ModuleException::class);
+        $this->expectExceptionMessage(sprintf('Module [%s] has already been added', StructuredLoggingModule::class));
+
+        $kernel->boot();
     }
 
     #[Test]

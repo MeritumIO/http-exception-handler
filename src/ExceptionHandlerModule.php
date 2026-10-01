@@ -4,21 +4,32 @@ namespace Meritum\HttpExceptionHandler;
 
 use Georgeff\Kernel\KernelInterface;
 use Psr\Container\ContainerInterface;
-use Georgeff\Kernel\Module\ModuleInterface;
+use Meritum\Http\HttpKernelInterface;
 use Meritum\StructuredLogging\ExceptionReporter;
-use Meritum\Http\Exception\ExceptionHandlerInterface;
+use Georgeff\Kernel\Contract\EnvironmentInterface;
+use Meritum\Http\Contract\ExceptionHandlerInterface;
+use Georgeff\Kernel\Contract\AggregateModuleInterface;
+use Meritum\StructuredLogging\StructuredLoggingOption;
+use Meritum\StructuredLogging\StructuredLoggingModule;
 
-final class ExceptionHandlerModule implements ModuleInterface
+final class ExceptionHandlerModule implements AggregateModuleInterface
 {
     public function register(KernelInterface $kernel): void
     {
+        assert($kernel instanceof HttpKernelInterface);
+
         $kernel->define(HttpExceptionTranslationHandler::class, fn() => new HttpExceptionTranslationHandler())
-               ->tag('exception.translator.handlers');
+               ->tag(StructuredLoggingOption::TranslatorTag->value);
 
-        $factory = function (ContainerInterface $c): ExceptionHandlerInterface {
+        $kernel->addExceptionHandler(function (ContainerInterface $c): ExceptionHandlerInterface {
             return new ExceptionHandler($c->get(ExceptionReporter::class));
-        };
+        });
+    }
 
-        $kernel->define(ExceptionHandlerInterface::class, $factory);
+    public function modules(EnvironmentInterface $env): array
+    {
+        return [
+            new StructuredLoggingModule(),
+        ];
     }
 }
