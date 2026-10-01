@@ -1,5 +1,9 @@
 # meritum/http-exception-handler
 
+[![CI](https://github.com/MeritumIO/http-exception-handler/actions/workflows/ci.yml/badge.svg)](https://github.com/MeritumIO/http-exception-handler/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/MeritumIO/http-exception-handler/badge.svg?branch=main)](https://coveralls.io/github/MeritumIO/http-exception-handler?branch=main)
+[![Packagist Version](https://img.shields.io/packagist/v/meritum/http-exception-handler)](https://packagist.org/packages/meritum/http-exception-handler)
+
 HTTP exception handler that translates exceptions into structured JSON error responses using the `meritum/structured-logging` pipeline.
 
 ## Requirements

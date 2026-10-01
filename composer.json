@@ -18,6 +18,7 @@
   },
   "require-dev": {
     "bnf/phpstan-psr-container": "^1.0",
+    "php-coveralls/php-coveralls": "^2.9",
     "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^11.0",
     "squizlabs/php_codesniffer": "^3.11"
@@ -44,6 +45,9 @@
     ],
     "phpcs": [
       "vendor/bin/phpcs"
+    ],
+    "coverage": [
+      "vendor/bin/phpunit --coverage-clover=coverage/clover.xml"
     ]
   }
 }
