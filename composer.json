@@ -12,7 +12,7 @@
   "license": "MIT",
   "require": {
     "php": "^8.4",
-    "georgeff/kernel": "^2.0",
+    "georgeff/kernel": "^2.1",
     "meritum/http": "^2.0",
     "meritum/structured-logging": "^2.0"
   },

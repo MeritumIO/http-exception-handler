@@ -4,7 +4,6 @@ namespace Meritum\HttpExceptionHandler\Test;
 
 use Georgeff\Kernel\DI\TagRegistryInterface;
 use Georgeff\Kernel\Environment\Testing;
-use Georgeff\Kernel\Exception\ModuleException;
 use Meritum\Http\Contract\ExceptionHandlerInterface;
 use Meritum\Http\HttpKernel;
 use Meritum\HttpExceptionHandler\ExceptionHandlerModule;
@@ -58,17 +57,18 @@ final class ExceptionHandlerModuleTest extends TestCase
     }
 
     #[Test]
-    public function test_registering_structured_logging_module_directly_as_well_throws(): void
+    public function test_registering_structured_logging_module_directly_as_well_is_allowed(): void
     {
         $kernel = new HttpKernel(new Testing());
         $kernel->define(LoggerInterface::class, fn() => new NullLogger());
         $kernel->addModule(new StructuredLoggingModule());
         $kernel->addModule(new ExceptionHandlerModule());
-
-        $this->expectException(ModuleException::class);
-        $this->expectExceptionMessage(sprintf('Module [%s] has already been added', StructuredLoggingModule::class));
-
         $kernel->boot();
+
+        $modules = array_count_values($kernel->getModules());
+
+        $this->assertSame(1, $modules[StructuredLoggingModule::class]);
+        $this->assertInstanceOf(ExceptionHandlerInterface::class, $kernel->getContainer()->get(ExceptionHandlerInterface::class));
     }
 
     #[Test]

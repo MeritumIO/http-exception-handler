@@ -5,7 +5,7 @@ HTTP exception handler that translates exceptions into structured JSON error res
 ## Requirements
 
 - PHP 8.4+
-- [`georgeff/kernel`](https://github.com/MikeGeorgeff/kernel) ^2.0
+- [`georgeff/kernel`](https://github.com/MikeGeorgeff/kernel) ^2.1
 - [`meritum/http`](https://github.com/MeritumIO/http) ^2.0
 - [`meritum/structured-logging`](https://github.com/MeritumIO/structured-logging) ^2.0
 
@@ -19,7 +19,7 @@ composer require meritum/http-exception-handler
 
 ### Module registration
 
-Add `ExceptionHandlerModule` to your `HttpKernel`. It's an aggregate module that loads `StructuredLoggingModule` for you, so you don't register that yourself. Structured logging needs a `LoggerInterface`, so define one (or add [`meritum/logger`](https://github.com/MeritumIO/logger)'s `LoggerModule`):
+Add `ExceptionHandlerModule` to your `HttpKernel`. It's an aggregate module that loads `StructuredLoggingModule` for you, so you don't need to register that yourself. Structured logging needs a `LoggerInterface`, so define one (or add [`meritum/logger`](https://github.com/MeritumIO/logger)'s `LoggerModule`):
 
 ```php
 use Meritum\Http\HttpKernel;
@@ -33,7 +33,7 @@ $kernel->addModule(new ExceptionHandlerModule());
 $kernel->run();
 ```
 
-Don't also add `StructuredLoggingModule` to the same kernel. With `georgeff/kernel` 2.0, registering a module both directly and through an aggregate throws `ModuleException` ("Module [...] has already been added") at boot.
+You can still add `StructuredLoggingModule` yourself, for example if your application uses `ExceptionReporter` directly and you want that dependency stated in your own module list. The kernel registers it once, and the instance you added directly is the one used.
 
 `ExceptionHandlerModule` registers:
 
