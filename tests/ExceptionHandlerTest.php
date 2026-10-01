@@ -2,7 +2,7 @@
 
 namespace Meritum\HttpExceptionHandler\Test;
 
-use Meritum\Http\Exception\ExceptionHandlerInterface;
+use Meritum\Http\Contract\ExceptionHandlerInterface;
 use Meritum\Http\Exception\HttpExceptionInterface;
 use Meritum\HttpExceptionHandler\ExceptionHandler;
 use Meritum\StructuredLogging\Exception\DomainException;

@@ -5,9 +5,9 @@ HTTP exception handler that translates exceptions into structured JSON error res
 ## Requirements
 
 - PHP 8.4+
-- `georgeff/kernel` ^1.6
-- `meritum/http` ^1.0
-- `meritum/structured-logging` ^1.0
+- [`georgeff/kernel`](https://github.com/MikeGeorgeff/kernel) ^2.1
+- [`meritum/http`](https://github.com/MeritumIO/http) ^2.0
+- [`meritum/structured-logging`](https://github.com/MeritumIO/structured-logging) ^2.0
 
 ## Installation
 
@@ -19,22 +19,31 @@ composer require meritum/http-exception-handler
 
 ### Module registration
 
-Register `ExceptionHandlerModule` alongside `StructuredLoggingModule`. `StructuredLoggingModule` requires a `LoggerInterface` to already be registered:
+Add `ExceptionHandlerModule` to your `HttpKernel`. It's an aggregate module that loads `StructuredLoggingModule` for you, so you don't need to register that yourself. Structured logging needs a `LoggerInterface`, so define one (or add [`meritum/logger`](https://github.com/MeritumIO/logger)'s `LoggerModule`):
 
 ```php
+use Meritum\Http\HttpKernel;
+use Psr\Log\LoggerInterface;
+use Georgeff\Kernel\Environment\Production;
 use Meritum\HttpExceptionHandler\ExceptionHandlerModule;
-use Meritum\StructuredLogging\StructuredLoggingModule;
 
+$kernel = new HttpKernel(new Production());
 $kernel->define(LoggerInterface::class, fn() => new MyLogger());
-$kernel->addModule(new StructuredLoggingModule());
 $kernel->addModule(new ExceptionHandlerModule());
-$kernel->boot();
+$kernel->run();
 ```
+
+You can still add `StructuredLoggingModule` yourself, for example if your application uses `ExceptionReporter` directly and you want that dependency stated in your own module list. The kernel registers it once, and the instance you added directly is the one used.
 
 `ExceptionHandlerModule` registers:
 
-- `ExceptionHandlerInterface` — the handler `meritum/http` resolves when an exception reaches the kernel boundary
-- `HttpExceptionTranslationHandler` — tagged as `exception.translator.handlers`, translates `HttpExceptionInterface` instances into structured domain exceptions
+- `StructuredLoggingModule` — loaded through the aggregate, providing `ExceptionReporter` and the translation pipeline
+- `ExceptionHandlerInterface` — registered through `HttpKernel::addExceptionHandler()`; the handler `meritum/http` resolves when an exception reaches the kernel boundary
+- `HttpExceptionTranslationHandler` — tagged with `StructuredLoggingOption::TranslatorTag` (`exception.translator.handlers`), translates `HttpExceptionInterface` instances into structured domain exceptions
+
+The module must be added to an `HttpKernel`, since `ExceptionHandlerInterface` is only ever resolved by `HttpKernel::handle()`.
+
+To replace the exception handler with your own, use `$kernel->override(ExceptionHandlerInterface::class, ...)`. Calling `addExceptionHandler()` or `define(ExceptionHandlerInterface::class, ...)` alongside this module throws a `DefinitionException`.
 
 ### How it works
 
@@ -120,8 +129,10 @@ final class ValidationExceptionTranslationHandler implements TranslationHandler
 Register and tag it in your module:
 
 ```php
+use Meritum\StructuredLogging\StructuredLoggingOption;
+
 $kernel->define(ValidationExceptionTranslationHandler::class, fn() => new ValidationExceptionTranslationHandler())
-       ->tag('exception.translator.handlers');
+       ->tag(StructuredLoggingOption::TranslatorTag->value);
 ```
 
 Because this handler runs at priority `1`, it matches before `HttpExceptionTranslationHandler` (`0`) for `ValidationHttpException` instances. All other HTTP exceptions continue to be handled by the default.

@@ -7,7 +7,7 @@ use Psr\Http\Message\ResponseInterface;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ServerRequestInterface;
 use Meritum\StructuredLogging\ExceptionReporter;
-use Meritum\Http\Exception\ExceptionHandlerInterface;
+use Meritum\Http\Contract\ExceptionHandlerInterface;
 
 final class ExceptionHandler implements ExceptionHandlerInterface
 {

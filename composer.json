@@ -12,9 +12,9 @@
   "license": "MIT",
   "require": {
     "php": "^8.4",
-    "georgeff/kernel": "^1.6",
-    "meritum/http": "^1.0",
-    "meritum/structured-logging": "^1.0"
+    "georgeff/kernel": "^2.1",
+    "meritum/http": "^2.0",
+    "meritum/structured-logging": "^2.0"
   },
   "require-dev": {
     "bnf/phpstan-psr-container": "^1.0",
@@ -36,8 +36,14 @@
     "sort-packages": true
   },
   "scripts": {
-    "test": ["vendor/bin/phpunit"],
-    "analyze": ["vendor/bin/phpstan"],
-    "phpcs": ["vendor/bin/phpcs"]
+    "test": [
+      "vendor/bin/phpunit"
+    ],
+    "analyze": [
+      "vendor/bin/phpstan"
+    ],
+    "phpcs": [
+      "vendor/bin/phpcs"
+    ]
   }
 }
